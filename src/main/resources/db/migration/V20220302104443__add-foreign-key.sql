@@ -1,0 +1,1 @@
+ALTER TABLE category ADD FOREIGN KEY (department_id) REFERENCES department(department_id);

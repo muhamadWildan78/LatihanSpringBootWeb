@@ -7,12 +7,15 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-    @RestController
+@RestController
     @RequestMapping("/api")
     public class HaiController {
 
@@ -24,8 +27,8 @@ import java.util.List;
             return dao.list();
         }
 
-        @GetMapping("/findById/{kodeid}")
-        public ResponseEntity<?> findById(@PathVariable String id) {
+        @GetMapping("/findById/{id}")
+         public ResponseEntity<?> findById(@PathVariable Integer id) {
             try {
                 Category data = this.dao.findById(id);
                 return ResponseEntity.ok(data);
@@ -49,25 +52,41 @@ import java.util.List;
         }
 
         @PostMapping(value = "/input")
-        public ResponseEntity<?> inputData(@RequestBody @Valid Category data) {
-            try {
-                this.dao.insertCategory(data);
-                return ResponseEntity.ok().build();
-            } catch (DuplicateKeyException dke) {
-                dke.printStackTrace();
-                return ResponseEntity.badRequest()
-                        .body("Duplicate data");
-            }catch (DataAccessException dea){
-                dea.printStackTrace();
-                return ResponseEntity.internalServerError()
-                        .body("database gak konek atau sql salah");
-            }
-            catch (Exception ex){
-                ex.printStackTrace();
-                return ResponseEntity.internalServerError()
-                        .body("Gak tau errornya apa! check sendiri");
-            }
+        public ResponseEntity<Map<String, Object>>
+        insertData(@RequestBody @Valid Category data, BindingResult result) {
+            Map<String, Object> hasil = new HashMap<>();
+            hasil.put("id", dao.insertCategory(data));
+            hasil.put("status", "simpan Berhasil");
+            return ResponseEntity.ok(hasil);
         }
+//            try {
+//                this.dao.insertCategory(data);
+//                return ResponseEntity.ok().build();
+//            } catch (DuplicateKeyException dke) {
+//                dke.printStackTrace();
+//                return ResponseEntity.badRequest()
+//                        .body("Duplicate data");
+//            }catch (DataAccessException dea){
+//                dea.printStackTrace();
+//                return ResponseEntity.internalServerError()
+//                        .body("database gak konek atau sql salah");
+//            }
+//            catch (Exception ex){
+//                ex.printStackTrace();
+//                return ResponseEntity.internalServerError()
+//                        .body("Gak tau errornya apa! check sendiri");
+//            }
+
+        @PostMapping("/update")
+        public ResponseEntity<Map<String, Object>>
+        updateCategory(@RequestBody Category cate){
+            Map<String, Object> hasil = new HashMap<>();
+            dao.updateCategory(cate);
+            hasil.put( "id", 0);
+            hasil.put("status", "update Berhasil");
+            return ResponseEntity.ok(hasil);
+        }
+
         @DeleteMapping("/category/{kodeid}")
         public ResponseEntity<?> delete(@PathVariable String kodeid) {
             this.dao.deleteCategory(kodeid);

@@ -4,8 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -20,21 +21,23 @@ public class CategoryDao {
         return this.jdbcTemplate.query(sql, new CategoryDao.RowMapperInner());
     }
 
-    public Category findById(String id) {
-        String sql = "select * from category where category_id = :kode";
+    public Category findById(Integer id) {
+        String sql = "select * from category where category_id = :id";
         MapSqlParameterSource map = new MapSqlParameterSource();
-        map.addValue("kode", id);
+        map.addValue("id", id);
         return this.jdbcTemplate.queryForObject(sql, map, new CategoryDao.RowMapperInner());
     }
 
-    public void insertCategory(Category data) {
+    public Integer insertCategory(Category data) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         String sql = "insert into category(category_id, department_id, name, description) values (:kodeid, :department, :name, :description)";
         MapSqlParameterSource map = new MapSqlParameterSource();
         map.addValue("kodeid", data.getCategory_id());
         map.addValue("department", data.getDepartment_id());
         map.addValue("name", data.getName());
         map.addValue("description", data.getDescription());
-        this.jdbcTemplate.update(sql, map);
+        this.jdbcTemplate.update(sql, map, keyHolder);
+        return (Integer) keyHolder.getKeys().get("category_id");
     }
 
     public void updateCategory(Category data) {
@@ -46,6 +49,7 @@ public class CategoryDao {
         map.addValue("description", data.getDescription());
         this.jdbcTemplate.update(sql, map);
     }
+
     public void deleteCategory(String categoryId) {
         String sql = "delete from category where category_id = :kodeid";
         MapSqlParameterSource map = new MapSqlParameterSource();
@@ -54,7 +58,6 @@ public class CategoryDao {
     }
 
     public class RowMapperInner implements RowMapper<Category> {
-
         @Override
         public Category mapRow(ResultSet rs, int rowNum) throws SQLException {
             Category data = new Category();

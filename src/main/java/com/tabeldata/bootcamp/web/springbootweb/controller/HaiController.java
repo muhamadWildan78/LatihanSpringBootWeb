@@ -53,11 +53,16 @@ import java.util.Map;
 
         @PostMapping(value = "/input")
         public ResponseEntity<Map<String, Object>>
-        insertData(@RequestBody @Valid Category data, BindingResult result) {
+        insertData(@Valid @RequestBody Category data, BindingResult result) {
             Map<String, Object> hasil = new HashMap<>();
-            hasil.put("id", dao.insertCategory(data));
-            hasil.put("status", "simpan Berhasil");
-            return ResponseEntity.ok(hasil);
+            if (result.hasErrors()) {
+                hasil.put("status", result.getFieldErrors() );
+                return ResponseEntity.badRequest().body(hasil);
+            } else {
+                hasil.put("id", dao.insertCategory(data));
+                hasil.put("status", "simpan Berhasil");
+                return ResponseEntity.ok(hasil);
+            }
         }
 //            try {
 //                this.dao.insertCategory(data);
